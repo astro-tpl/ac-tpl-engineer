@@ -1,0 +1,10 @@
+version: v1.0.0
+id: "cursor/default.yaml"
+type: "context"
+name: "Cursor 基础守则"
+labels: ["rules", "cursor"]
+summary: "Cursor 项目通用基础配置"
+targets:
+  - path: ".cursor/principles.mdc"
+    mode: "write"
+    content_from_prompt: "principles/default.yaml"
