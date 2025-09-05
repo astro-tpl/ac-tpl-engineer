@@ -1,5 +1,5 @@
 version: v1.0.0
-id: "ac.io/spec/lang/shell"
+id: "ac.io/v1/spec/lang/shell"
 type: "prompt"
 name: "Shell 编程规范"
 labels: ["programming", "language", "shell"]

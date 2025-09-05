@@ -1,5 +1,5 @@
 version: v1.0.0
-id: "ac.io/ctx/cursor/default"
+id: "ac.io/v1/ctx/cursor/default"
 type: "context"
 name: "Cursor 基础规则"
 labels: [cursor", "rules"]
@@ -14,7 +14,7 @@ files:
       # 编写任意代码都需严格遵循以下原则
 
       ```yaml
-      {ac.io/spec/common/principles}
+      {ac.io/v1/spec/common/principles}
       ```
   - path: ".cursor/shell.mdc"
     content: |
@@ -28,5 +28,5 @@ files:
       # 编写任意 shell 代码都需严格遵循以下原则
 
       ```yaml
-      {ac.io/spec/lang/shell}
+      {ac.io/v1/spec/lang/shell}
       ```
