@@ -1,5 +1,5 @@
 version: v1.0.0
-id: "context_cursor_default"
+id: "cursor_default"
 type: "context"
 name: "Cursor 基础规则"
 labels: [cursor", "rules"]
