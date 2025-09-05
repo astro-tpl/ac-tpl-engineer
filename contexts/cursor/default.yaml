@@ -14,7 +14,7 @@ files:
       # 编写任意代码都需严格遵循以下原则
 
       ```yaml
-      {ac.io/v1/spec/common/principles}
+      {{ac.io/v1/spec/common/principles}}
       ```
   - path: ".cursor/shell.mdc"
     content: |
@@ -28,5 +28,5 @@ files:
       # 编写任意 shell 代码都需严格遵循以下原则
 
       ```yaml
-      {ac.io/v1/spec/lang/shell}
+      {{ac.io/v1/spec/lang/shell}}
       ```
