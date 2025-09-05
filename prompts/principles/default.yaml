@@ -1,5 +1,5 @@
 version: v1.0.0
-id: "common_spec_principles"
+id: "ac.io/spec/common/principles"
 type: "prompt"
 name: "编程基本原则"
 labels: ["principle"]
