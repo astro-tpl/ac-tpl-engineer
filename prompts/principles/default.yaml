@@ -1,66 +1,28 @@
 version: v1.0.0
-id: "principles/default.yaml"
+id: "common_spec_principles"
 type: "prompt"
 name: "编程基本原则"
 labels: ["principle"]
-summary: "Core Principles for Coding"
-content: |
+content:
   principles:
     - name: KISS
-      full: Keep It Simple, Stupid
       description: 保持代码尽可能简单，避免不必要的复杂度
-      practice:
+      examples:
         - 拆解复杂函数为小函数
         - 不引入过早优化
-      example: |
-        # ✅ 简单明了
-        function getUserName(user) {
-          return user.name;
-        }
 
     - name: DRY
-      full: Don't Repeat Yourself
       description: 避免重复代码，提高可维护性
-      practice:
+      examples:
         - 提取公共逻辑为函数或模块
-      example: |
-        # ✅ 重复逻辑封装为函数
-        function logError(error) {
-          console.error(`[ERROR] ${error.message}`);
-        }
 
     - name: YAGNI
-      full: You Aren't Gonna Need It
       description: 不实现当前不需要的功能，避免浪费资源
-      practice:
+      examples:
         - 不要为了“将来可能需要”而增加功能
-      example: |
-        # ❌ 不需要的参数处理逻辑
-        function process(data, unusedOption) { ... }
 
     - name: Separation of Concerns
       description: 单一职责，每个模块只做一件事
-      practice:
+      examples:
         - 将 UI 与业务逻辑分离
         - 将数据处理从视图中剥离
-      example: |
-        # ✅ 数据与展示分离
-        function fetchData() { ... }
-        function render(data) { ... }
-
-    - name: self-documenting code
-      description: 代码应自解释，无需额外注释也能看懂
-      practice:
-        - 使用有意义的函数/变量命名
-        - 减少缩写
-      example: |
-        # ✅ 语义清晰
-        const isUserAuthenticated = user.token !== undefined;
-
-    - name: Least Knowledge (Law of Demeter)
-      description: 模块应尽可能少依赖外部细节，降低耦合
-      practice:
-        - 不通过链式调用访问深层对象
-      example: |
-        # ❌ 违反最少知识原则
-        user.getProfile().getSettings().getTheme();

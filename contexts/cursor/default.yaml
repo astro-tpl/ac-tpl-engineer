@@ -1,10 +1,32 @@
 version: v1.0.0
-id: "cursor/default.yaml"
+id: "context_cursor_default"
 type: "context"
-name: "Cursor 基础守则"
-labels: ["rules", "cursor"]
+name: "Cursor 基础规则"
+labels: [cursor", "rules"]
 summary: "Cursor 项目通用基础配置"
-targets:
+files:
   - path: ".cursor/principles.mdc"
-    mode: "write"
-    content_from_prompt: "principles/default.yaml"
+    content: |
+      ---
+      alwaysApply: true
+      ---
+
+      # 编写任意代码都需严格遵循以下原则
+
+      ```yaml
+      {common_spec_principles}
+      ```
+  - path: ".cursor/shell.mdc"
+    content: |
+      ---
+      description: Shell脚本编写规范
+      globs:
+        - "**/*.sh"
+      alwaysApply: false
+      ---
+
+      # 编写任意 shell 代码都需严格遵循以下原则
+
+      ```yaml
+      {lang_spec_shell}
+      ```

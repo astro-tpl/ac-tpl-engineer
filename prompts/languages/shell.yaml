@@ -1,0 +1,227 @@
+version: v1.0.0
+id: "lang_spec_shell"
+type: "prompt"
+name: "Shell 编程规范"
+labels: ["programming", "language", "shell"]
+content:
+  code_organization:
+    naming_convention: "函数使用 snake_case 命名，常量使用大写"
+    functions:
+      layout: "采用 main + 函数块结构，保持逻辑清晰"
+      style: "使用动词_名词命名，如 check_env"
+      scope: "每个函数只做一件事"
+      global_vars: "尽量避免使用全局变量"
+      inline_libs: "必要的公共函数可写在脚本尾部，无需外部依赖"
+    comments: "每段逻辑块前写一句注释说明目的. 注释说明『为什么做』，而非『做了什么』"
+    put_main_at_the_beginning: |
+      # 将 main 函数放在脚本开头，方便阅读和调试
+      main() {
+        parse_args "$@"
+        run_task
+      }
+
+      parse_args() { ... }
+      run_task() { ... }
+
+      main "$@"
+    divide_code_blocks_with_3_lines_comment: |
+      # ============================================================================
+      # Function Group A
+      # ============================================================================
+      function_A1() { ... }
+      function_A2() { ... }
+      function_A3() { ... }
+
+      # ============================================================================
+      # Function Group B
+      # ============================================================================
+      function_B1() { ... }
+      function_B2() { ... }
+      function_B3() { ... }
+
+  parse_args:
+    description: "每个文件都应包含 args 解析逻辑，避免手动解析参数"
+    parse_method: "case 分支或 getopt 解析参数"
+    long_flags: true # 支持 --flag 样式参数
+    unknown_flags: "遇到未知参数时退出"
+    example: |
+      parse_args() {
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            --file) FILE="$2"; shift 2 ;;
+            --force) FORCE=true; shift ;;
+            *) echo "未知参数: $1"; exit 1 ;;
+          esac
+        done
+      }
+
+  config_handling:
+    principle: "支持通过 YAML 或纯文本配置文件传入脚本参数，避免直接 source"
+    supported_formats:
+      - ".yaml"
+      - ".yml"
+      - ".conf"
+      - ".txt"
+    load_mechanism:
+      - "使用 grep / awk / sed 解析键值对"
+      - "或嵌入 yq（YAML 解析工具）读取配置"
+      - "不直接 source 配置文件，避免语法污染和注入风险"
+    file_check: "读取前必须检查配置文件是否存在，否则报错或使用默认值"
+    fallback: "每个配置参数应允许提供默认值（默认变量或 --flag）"
+    example_conf_file: |
+      # config.txt
+      API_KEY=abcdef
+      TIMEOUT=30
+    example_yaml_file: |
+      # config.yaml
+      api_key: abcdef
+      timeout: 30
+    example_parser_plain_text: |
+      # 读取纯文本 config.txt
+      get_config_val() {
+        grep "^$1=" "$CONFIG_FILE" | cut -d'=' -f2-
+      }
+
+      CONFIG_FILE="config.txt"
+      [[ -f "$CONFIG_FILE" ]] || { echo "配置文件不存在"; exit 1; }
+
+      API_KEY="$(get_config_val API_KEY)"
+      TIMEOUT="$(get_config_val TIMEOUT)"
+      : "${API_KEY:?缺少 API_KEY 参数}"
+    example_parser_yaml: |
+      # 读取 YAML config.yaml，依赖 yq 工具（https://github.com/mikefarah/yq）
+      CONFIG_FILE="config.yaml"
+      [[ -f "$CONFIG_FILE" ]] || { echo "配置文件不存在"; exit 1; }
+
+      API_KEY="$(yq '.api_key' "$CONFIG_FILE")"
+      TIMEOUT="$(yq '.timeout' "$CONFIG_FILE")"
+      : "${API_KEY:?缺少 api_key}"
+    tooling_requirements:
+      yq: "如需解析 YAML，建议预先检查 yq 是否已安装"
+      example: |
+        command -v yq >/dev/null || {
+          echo "请安装 yq 工具用于解析 YAML"
+          exit 1
+        }
+    security_note: "配置文件中如包含敏感字段，应避免上传到 Git / 使用 .gitignore 排除"
+    escape_handling:
+      principle: "处理配置值中可能包含的特殊字符，防止 shell 命令崩溃或被注入"
+      risk_cases:
+        - 包含空格、&、$、"、'、\\、换行、特殊变量等
+        - YAML 中的带引号字符串或多行 block 字符串
+      handling_strategies:
+        - '统一对输出变量使用双引号包裹，如："$VAR"'
+        - "使用 printf、jq、yq 等工具时保持原始值不被解释"
+        - "用 base64 编码后传递内容是最后防线"
+
+  loop_handling:
+    principle: "循环结构应简洁、健壮、明确终止条件，防止死循环或语法歧义"
+    best_practices:
+      - "总是设置循环退出条件，防止无限执行"
+      - "避免 for/while 中出现未加引号的变量展开，导致路径或空格错误"
+      - "使用计数器 + 最大重试次数防止崩溃重试"
+      - "当存在多个while循环时, 使用 for-in-list 代替 while-read-loop, 防止 while read 可能出问题"
+      - "如循环涉及外部命令，考虑失败重试或超时机制"
+    safe_for_loop_example: |
+      # 正确写法：总是加引号
+      FILES=("a.txt" "b file.txt" "c.txt")
+
+      for file in "${FILES[@]}"; do
+        echo "Processing: \"$file\""
+      done
+    unsafe_for_loop_example: |
+      # 错误写法：文件名带空格会被错误拆分
+      for file in ${FILES[@]}; do
+        echo "$file"
+      done
+    safe_while_loop_example: |
+      # 用 while read 读取文件每一行，防止空格/特殊字符截断
+      while IFS= read -r line; do
+        echo "Line: $line"
+      done < config.txt
+    retry_with_backoff: |
+      try_times=0
+      max_retry=5
+
+      while ! curl -sf https://api.example.com; do
+        try_times=$((try_times + 1))
+        if ((try_times >= max_retry)); then
+          echo "❌ 重试失败超过 $max_retry 次，退出"
+          exit 1
+        fi
+        echo "⚠️ 第 $try_times 次重试中，等待 2 秒..."
+        sleep 2
+      done
+    parallelization_note: |
+      - 如在循环中执行后台任务 (&)，请使用 wait 等待结束
+      - 过多并发任务请控制并发数（如结合 `xargs -P` 或自定义队列）
+      - 避免大量 `&` 导致系统资源耗尽
+
+      example: |
+        for cmd in "${CMDS[@]}"; do
+          "$cmd" &
+        done
+        wait  # 等待所有后台任务完成
+    perf_tips:
+      - "如循环内执行耗时命令，建议输出进度条或提示信息"
+      - "用 `seq` 配合 for 可更安全控制数字循环"
+      - "批量处理建议用 `xargs -n1 -P4` 并发加速"
+    auto_increment:
+      - "使用 `i=$((i+1))` 自动递增计数器, 避免 `((i++))` 语法歧义"
+
+  logging:
+    colors: true # 启用彩色输出
+    styles:
+      info: "[INFO] 蓝色"
+      success: "[SUCCESS] 绿色"
+      error: "[ERROR] 红色"
+    log_to_file:
+      enabled: true
+      method: "使用 tee 同步写入文件"
+      path: "/var/log/your-script.log"
+    format: "[时间] [级别] 内容"
+    example: |
+      info() { printf '%s [INFO] %s\n' "$(date '+%F %T')" "$*"; }
+      debug() { printf '%s [DEBUG] %s\n' "$(date '+%F %T')" "$*"; }
+      warn() { printf '%s [WARN] %s\n' "$(date '+%F %T')" "$*" >&2; }
+      error() { printf '%s [ERROR] %s\n' "$(date '+%F %T')" "$*" >&2; }
+
+      info "启动脚本..."
+      debug "这是一个调试信息"
+      warn "这是一个警告"
+      error "这是一个错误"
+
+  validation:
+    input_check: true # 参数校验
+    env_check: true # 环境变量校验
+    command_check: "使用 command -v 检查依赖"
+    example: |
+      command -v curl >/dev/null || {
+        echo "curl 未安装" && exit 1
+      }
+
+  cleanup:
+    enabled: true
+    method: "trap cleanup EXIT"
+    temp_files: "在退出时删除临时文件"
+    example: |
+      cleanup() { rm -f /tmp/tempfile; }
+      trap cleanup EXIT
+
+  error_handling:
+    verbose_errors: true
+    trap_exit: true
+
+  metadata_block:
+    version: true
+    help: true
+    usage_example: "使用 --help 或 --version 提供信息"
+    example: |
+      usage() {
+        echo "用法: ./script.sh --file <路径>"
+      }
+
+  recommended_tools:
+    - shellcheck # 静态分析
+    - getopt # 参数解析
+    - tee # 日志输出
